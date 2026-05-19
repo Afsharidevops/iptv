@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { Feed, Channel } from '$lib/types'
+  import type { Logo } from '$lib/types'
   import * as LogoList from './'
 
   interface Props {
-    logos: (Feed.Logo | Channel.Logo)[]
+    logos: Logo.Type[]
   }
 
   const { logos }: Props = $props()
