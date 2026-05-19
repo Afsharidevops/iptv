@@ -20,6 +20,16 @@ export default defineConfig([
   },
 
   {
+    files: ['**/*.svelte.ts'],
+    languageOptions: {
+      parser: ts.parser,
+      parserOptions: {
+        projectService: true
+      }
+    }
+  },
+
+  {
     files: ['**/*.svelte'],
     languageOptions: {
       parserOptions: {
@@ -32,7 +42,7 @@ export default defineConfig([
   },
 
   {
-    ignores: ['tests/__data__/**', 'docs/**', '.svelte-kit/**']
+    ignores: ['tests/__data__/**', 'docs/**', '.svelte-kit/**', 'static/**', 'temp/**']
   },
 
   {
