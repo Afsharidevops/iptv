@@ -5,7 +5,7 @@
   import type { Stream } from '$lib/types'
 
   interface Props {
-    stream: Stream
+    stream: Stream.Type
   }
 
   const { stream }: Props = $props()
