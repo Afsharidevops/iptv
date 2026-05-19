@@ -108,10 +108,10 @@ async function save(data: Compile.Data) {
   for (const channel of data.channels) {
     await staticStorage.save(normalizePath(channel.dataPath), pack(channel))
 
-    const feeds = feedsByChannelId.get(channel.id)
+    const feeds = feedsByChannelId.get(channel.id) ?? []
     await staticStorage.save(normalizePath(channel.feedsPath), pack(feeds))
 
-    const logos = logosByChannelId.get(channel.id)
+    const logos = logosByChannelId.get(channel.id) ?? []
     await staticStorage.save(normalizePath(channel.logosPath), pack(logos))
 
     channelIndex.push(channel.id)
