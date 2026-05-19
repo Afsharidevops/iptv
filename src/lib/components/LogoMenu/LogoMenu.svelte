@@ -4,7 +4,7 @@
   import { Menu } from '$lib/components'
 
   interface Props {
-    logo: Logo
+    logo: Logo.Type
   }
 
   const { logo }: Props = $props()
