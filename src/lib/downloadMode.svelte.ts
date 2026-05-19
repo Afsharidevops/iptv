@@ -40,8 +40,10 @@ class DownloadModeState {
     return Array.from(this.streams.values())
   }
 
-  getSelectedStreams() {
-    return Array.from(this.selectedStreams).map(hash => this.streams.get(hash))
+  getSelectedStreams(): Stream.Type[] {
+    return Array.from(this.selectedStreams)
+      .map(hash => this.streams.get(hash))
+      .filter(Boolean)
   }
 
   selectStreams(streams: Stream.Snippet[]) {
