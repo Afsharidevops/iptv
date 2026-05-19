@@ -1,26 +1,16 @@
 <script lang="ts">
   import { CopyLinkButton, Menu } from '$lib/components'
   import { toast } from '@zerodevx/svelte-toast'
-  import type { Channel } from '$lib/models'
-  import * as ChannelMenu from './'
+  import type { SvelteComponent } from 'svelte'
+  import type { Channel } from '$lib/types'
 
   interface Props {
-    channel: Channel
+    channel: Channel.Type
   }
 
   const { channel }: Props = $props()
 
-  function getStreams() {
-    return channel.getStreams()
-  }
-
-  const streams = getStreams()
-
-  function getLogos() {
-    return channel.getLogos()
-  }
-
-  let menu: Menu
+  let menu: SvelteComponent
   function closeMenu() {
     if (menu) menu.close()
   }
@@ -32,13 +22,31 @@
 </script>
 
 <Menu bind:this={menu}>
-  <CopyLinkButton link={channel.getPageUrl()} onCopy={onLinkCopy} />
-  {#if getLogos().isEmpty()}
-    <ChannelMenu.AddLogoButton {channel} onClick={closeMenu} />
+  <CopyLinkButton url={channel.pageUrl} onCopy={onLinkCopy} />
+  {#if !channel.hasLogos}
+    <Menu.Button
+      url={channel.addLogoUrl}
+      label="Add Logo"
+      iconName="Image"
+      external
+      onClick={closeMenu}
+    />
   {/if}
-  {#if streams.isEmpty() && !channel.isBlocked() && !channel.isClosed()}
-    <ChannelMenu.RequestLinkButton {channel} onClick={closeMenu} />
+  {#if !channel.hasStreams && !channel.isBlocked && !channel.isClosed}
+    <Menu.Button
+      url={channel.requestLinkUrl}
+      label="Request Stream"
+      iconName="Request"
+      external
+      onClick={closeMenu}
+    />
   {/if}
-  <ChannelMenu.EditButton {channel} onClick={closeMenu} />
-  <ChannelMenu.RemoveButton {channel} onClick={closeMenu} />
+  <Menu.Button url={channel.editUrl} label="Edit" iconName="Edit" external onClick={closeMenu} />
+  <Menu.Button
+    url={channel.removeUrl}
+    label="Remove"
+    iconName="Remove"
+    external
+    onClick={closeMenu}
+  />
 </Menu>

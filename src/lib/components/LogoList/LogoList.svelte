@@ -1,15 +1,14 @@
 <script lang="ts">
-  import type { Collection } from '@freearhey/core'
-  import type { Logo } from '$lib/models'
+  import type { Feed, Channel } from '$lib/types'
   import * as LogoList from './'
 
   interface Props {
-    logos: Collection<Logo>
+    logos: (Feed.Logo | Channel.Logo)[]
   }
 
   const { logos }: Props = $props()
 </script>
 
-{#each logos.all() as logo (logo.uuid)}
+{#each logos as logo (logo.url)}
   <LogoList.Item {logo} />
 {/each}

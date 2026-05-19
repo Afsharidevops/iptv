@@ -1,15 +1,23 @@
 import { build, files, version } from '$service-worker'
 
-const ASSETS = `cache_${version}`
+const ASSETS_CACHE_KEY = `assets_${version}`
+const OFFLINE_CACHE_KEY = `offline_${version}`
 
-const to_cache = build.concat(files)
-const staticAssets = new Set(to_cache)
+const filteredFiles = files.filter(
+	file =>
+		!file.startsWith('/data/channels/') &&
+		!file.startsWith('/data/channels.') &&
+		!file.startsWith('/data/streams.') &&
+		!file.startsWith('/data/feeds.')
+)
+const assetsToCache = [...build, ...filteredFiles]
+const assetsMap = new Set(assetsToCache)
 
 self.addEventListener('install', event => {
 	event.waitUntil(
 		caches
-			.open(ASSETS)
-			.then(cache => cache.addAll(to_cache))
+			.open(ASSETS_CACHE_KEY)
+			.then(cache => cache.addAll(assetsToCache))
 			.then(() => {
 				self.skipWaiting()
 			})
@@ -23,7 +31,7 @@ self.addEventListener('activate', event => {
 			.keys()
 			.then(async keys => {
 				for (const key of keys) {
-					if (key !== ASSETS) await caches.delete(key)
+					if (key !== ASSETS_CACHE_KEY) await caches.delete(key)
 				}
 
 				self.clients.claim()
@@ -33,7 +41,7 @@ self.addEventListener('activate', event => {
 })
 
 async function fetchAndCache(request) {
-	const cache = await caches.open(`offline_${version}`)
+	const cache = await caches.open(OFFLINE_CACHE_KEY)
 
 	try {
 		const response = await fetch(request)
@@ -56,7 +64,7 @@ self.addEventListener('fetch', event => {
 	const isDevServerRequest =
 		url.hostname === self.location.hostname && url.port !== self.location.port
 	const isSameOrigin = url.host === self.location.host
-	const isStaticAsset = isSameOrigin && staticAssets.has(url.pathname)
+	const isStaticAsset = isSameOrigin && assetsMap.has(url.pathname)
 	const skipBecauseUncached = event.request.cache === 'only-if-cached' && !isStaticAsset
 	if (isHttp && isSameOrigin && !isDevServerRequest && !skipBecauseUncached) {
 		event.respondWith(

@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { CloseButton, StreamList, Card } from '$lib/components'
-  import type { Feed } from '$lib/models'
+  import { IconButton, StreamList, Card } from '$lib/components'
+  import type { Stream } from '$lib/types'
   import * as Icon from '$lib/icons'
-  import * as StreamsCard from './'
 
   interface Props {
-    feed: Feed
+    streams: Stream.Type[]
+    addStreamUrl: string
     onClose?: () => void
   }
 
-  const { feed, onClose = () => {} }: Props = $props()
+  const { streams, addStreamUrl, onClose = () => {} }: Props = $props()
 </script>
 
 <Card>
@@ -24,13 +24,18 @@
   {/snippet}
   {#snippet headerRight()}
     <div class="inline-flex">
-      <StreamsCard.AddStreamIconButton {feed} />
-      <CloseButton onClick={onClose} />
+      <IconButton
+        onClick={() => window.open(addStreamUrl, '_blank')}
+        title="Add Stream"
+        iconName="AddCircle"
+        iconSize={20}
+      />
+      <IconButton onClick={onClose} iconName="Close" iconSize={20} title="Close" />
     </div>
   {/snippet}
   {#snippet body()}
     <div class="flex flex-col gap-2 p-2 sm:p-5">
-      <StreamList streams={feed.getStreams()} />
+      <StreamList {streams} />
     </div>
   {/snippet}
 </Card>

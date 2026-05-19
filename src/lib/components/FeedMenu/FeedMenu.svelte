@@ -1,27 +1,16 @@
 <script lang="ts">
   import { CopyLinkButton, Menu } from '$lib/components'
-  import type { Channel, Feed } from '$lib/models'
   import { toast } from '@zerodevx/svelte-toast'
-  import * as FeedMenu from './'
+  import type { SvelteComponent } from 'svelte'
+  import type { Feed } from '$lib/types'
 
   interface Props {
-    feed: Feed
-    channel: Channel
+    feed: Feed.Type
   }
 
-  const { feed, channel }: Props = $props()
+  const { feed }: Props = $props()
 
-  function getLogos() {
-    return feed.getLogos()
-  }
-
-  function getStreams() {
-    return feed.getStreams()
-  }
-
-  const streams = getStreams()
-
-  let menu: Menu
+  let menu: SvelteComponent
   function closeMenu() {
     if (menu) menu.close()
   }
@@ -33,16 +22,34 @@
 </script>
 
 <Menu bind:this={menu}>
-  <CopyLinkButton link={feed.getPageUrl()} onCopy={onLinkCopy} />
-  {#if getLogos().isEmpty()}
-    <FeedMenu.AddLogoButton {channel} {feed} onClick={closeMenu} />
+  <CopyLinkButton url={feed.pageUrl} onCopy={onLinkCopy} />
+  {#if !feed.hasLogos}
+    <Menu.Button
+      url={feed.addLogoUrl}
+      label="Add Logo"
+      iconName="Image"
+      external
+      onClick={closeMenu}
+    />
   {/if}
-  {#if streams.isEmpty() && !channel.isBlocked() && !channel.isClosed()}
-    <FeedMenu.AddStreamButton {feed} onClick={closeMenu} />
+  {#if !feed.hasStreams && !feed.isBlocked && !feed.isClosed}
+    <Menu.Button
+      url={feed.addStreamUrl}
+      label="Add Stream"
+      iconName="Stream"
+      external
+      onClick={closeMenu}
+    />
   {/if}
-  {#if streams.isEmpty() && !channel.isBlocked() && !channel.isClosed()}
-    <FeedMenu.RequestLinkButton {feed} onClick={closeMenu} />
+  {#if !feed.hasStreams && !feed.isBlocked && !feed.isClosed}
+    <Menu.Button
+      url={feed.requestLinkUrl}
+      label="Request Stream"
+      iconName="Request"
+      external
+      onClick={closeMenu}
+    />
   {/if}
-  <FeedMenu.EditButton {feed} onClick={closeMenu} />
-  <FeedMenu.RemoveButton {feed} onClick={closeMenu} />
+  <Menu.Button url={feed.editUrl} label="Edit" iconName="Edit" external onClick={closeMenu} />
+  <Menu.Button url={feed.removeUrl} label="Remove" iconName="Remove" external onClick={closeMenu} />
 </Menu>

@@ -1,23 +1,23 @@
 <script lang="ts">
-  import { Card, CloseButton, FeedList } from '$lib/components'
-  import type { Channel, Feed } from '$lib/models'
-  import Modal from 'svelte-simple-modal'
+  import { Card, FeedList, IconButton, Modal } from '$lib/components'
+  import type { Feed } from '$lib/types'
   import * as Icon from '$lib/icons'
-  import * as FeedsCard from './'
 
   interface Props {
     variant?: string
-    channel: Channel
+    feeds: Feed.Type[]
+    title?: string
+    addFeedUrl: string
     onClose?: () => void
   }
 
-  const { variant = 'default', channel, onClose = () => {} }: Props = $props()
-
-  function getFeeds() {
-    return channel
-      .getFeeds()
-      .sortBy([(feed: Feed) => (feed.is_main ? 1 : 0), (feed: Feed) => feed.id], ['desc', 'asc'])
-  }
+  const {
+    variant = 'default',
+    title = 'Feeds',
+    addFeedUrl,
+    feeds,
+    onClose = () => {}
+  }: Props = $props()
 </script>
 
 <Card border={variant === 'channelPage'}>
@@ -27,25 +27,28 @@
         class="inline-flex items-center pr-2 text-sm font-semibold text-gray-500 dark:text-gray-100 rounded-full"
       >
         <Icon.Feed size={21} />
-      </span>{variant === 'channelPage' ? 'Feeds' : channel.name}
+      </span>{title}
     </div>
   {/snippet}
   {#snippet headerRight()}
     <div class="inline-flex">
-      <FeedsCard.AddFeedIconButton {channel} />
+      <IconButton
+        onClick={() => {
+          window.open(addFeedUrl, '_blank')
+        }}
+        title="Add Feed"
+        iconName="AddCircle"
+        iconSize={20}
+      />
       {#if variant === 'default'}
-        <CloseButton onClick={onClose} />
+        <IconButton onClick={onClose} iconName="Close" iconSize={20} title="Close" />
       {/if}
     </div>
   {/snippet}
   {#snippet body()}
     <div class="flex flex-col gap-2 p-2 sm:p-5">
-      <Modal
-        unstyled={true}
-        classBg="fixed top-0 left-0 z-80 w-screen h-screen flex flex-col bg-black/70 overflow-y-scroll"
-        closeButton={false}
-      >
-        <FeedList {channel} feeds={getFeeds()} {onClose} />
+      <Modal classWindow="pt-14">
+        <FeedList {feeds} {onClose} />
       </Modal>
     </div>
   {/snippet}

@@ -1,18 +1,14 @@
 <script lang="ts">
-  import { CloseButton, GuideList, Card } from '$lib/components'
-  import type { Feed } from '$lib/models'
+  import { GuideList, Card, IconButton } from '$lib/components'
+  import type { Guide } from '$lib/types'
   import * as Icon from '$lib/icons'
 
   interface Props {
-    feed: Feed
+    guides: Guide.Type
     onClose?: () => void
   }
 
-  const { feed, onClose = () => {} }: Props = $props()
-
-  function getGuides() {
-    return feed.getGuides()
-  }
+  const { guides, onClose = () => {} }: Props = $props()
 </script>
 
 <Card>
@@ -28,13 +24,13 @@
   {/snippet}
   {#snippet headerRight()}
     <div>
-      <CloseButton onClick={onClose} />
+      <IconButton onClick={onClose} iconName="Close" iconSize={20} title="Close" />
     </div>
   {/snippet}
   {#snippet body()}
     <div class="p-2 sm:p-5 w-full">
       <div class="dark:border-gray-700 rounded-md border border-gray-200">
-        <GuideList guides={getGuides()} />
+        <GuideList {guides} />
       </div>
     </div>
   {/snippet}

@@ -1,19 +1,25 @@
 <script lang="ts">
   import type { HTMLButtonAttributes } from 'svelte/elements'
-  import type { Snippet } from 'svelte'
+  import * as Icon from '$lib/icons'
 
   type Props = {
+    title: string
+    iconName: string
     variant?: string
     size?: number
-    onClick?: () => void
-    children?: Snippet
+    onClick?: (event: MouseEvent) => void
+    disabled?: boolean
+    iconSize?: number
   } & HTMLButtonAttributes
 
   const {
     variant = 'default',
     size = 40,
+    iconName,
+    iconSize = 20,
     onClick = () => {},
-    children,
+    disabled = false,
+    title,
     ...restProps
   }: Props = $props()
 
@@ -28,6 +34,8 @@
 
     return classes
   }
+
+  const IconComponent = $derived(Icon[iconName])
 </script>
 
 <button
@@ -37,6 +45,9 @@
   style:width={`${size}px`}
   style:height={`${size}px`}
   onclick={onClick}
+  {title}
+  {disabled}
+  aria-label={title}
 >
-  {@render children?.()}
+  <IconComponent size={iconSize} />
 </button>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { query, isSearching } from '$lib/store'
+  import { search } from '$lib/search.svelte'
   import * as Icon from '$lib/icons'
 
   interface Props {
@@ -35,7 +35,7 @@
     <div
       class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none text-gray-500 dark:text-gray-400"
     >
-      {#if $isSearching}
+      {#if search.isSearching}
         <Icon.Spinner size={20} />
       {:else}
         <Icon.Search size={20} />
@@ -45,7 +45,7 @@
       type="search"
       id="search-input"
       bind:this={input}
-      bind:value={$query}
+      bind:value={search.query}
       class:h-10.5={version === 'default'}
       class:h-9.5={version === 'mini'}
       class="bg-white border border-gray-300 text-gray-900 outline-blue-500 text-sm rounded-md block w-full pl-10 py-2 px-1.5 dark:bg-primary-750 dark:border-primary-700 dark:placeholder-gray-400 dark:text-white placeholder-gray-400"
@@ -56,7 +56,7 @@
       class:h-8.5={version === 'default'}
       class:h-7.5={version === 'mini'}
     >
-      {#if $query.length}
+      {#if search.query.length}
         <button
           type="reset"
           onmousedown={event => {

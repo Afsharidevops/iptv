@@ -20,8 +20,12 @@
 
 <div class={getClasses()}>
   <div class="flex justify-between items-center pt-2 sm:pt-2.5 pl-4 pr-2.5 rounded-t w-full">
-    {@render headerLeft?.()}
-    {@render headerRight?.()}
+    <div>
+      {@render headerLeft?.()}
+    </div>
+    <div>
+      {@render headerRight?.()}
+    </div>
   </div>
   <div>
     {@render body?.()}

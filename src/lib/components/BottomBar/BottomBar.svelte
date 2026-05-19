@@ -1,7 +1,12 @@
 <script lang="ts">
-  import { downloadMode, selectedStreams } from '$lib/store'
-  import { CloseButton } from '$lib/components'
-  import * as BottomBar from './'
+  import { downloadMode } from '$lib/downloadMode.svelte'
+  import IconButton from '../Common/IconButton.svelte'
+  import type { Stream } from '$lib/types'
+
+  const streams: Stream.Snippet[] = $derived(
+    downloadMode.getStreams().map(stream => ({ hash: stream.hash, channelId: stream.channelId }))
+  )
+  const state = $derived(downloadMode.getSelectionState(streams))
 </script>
 
 <div class="px-2 w-full fixed bottom-10 sm:bottom-20 flex justify-center pointer-events-none">
@@ -10,17 +15,39 @@
   >
     <div class="flex justify-between items-center w-full max-w-7xl">
       <div class="text-sm text-gray-300 font-mono pl-2">
-        {$selectedStreams.size} selected
+        {downloadMode.selectedStreams.size} selected
       </div>
       <div class="flex space-x-1 sm:space-x-2 items-center">
-        <BottomBar.ResetButton variant="dark" />
-        <BottomBar.SelectAllButton variant="dark" />
-        <BottomBar.DownloadButton variant="dark" />
-        <CloseButton
-          onClick={() => {
-            downloadMode.set(false)
-          }}
+        {#if downloadMode.selectedStreams.size > 0}
+          <IconButton
+            variant="dark"
+            title="Reset"
+            onClick={() => downloadMode.deselectAllStreams()}
+            iconSize={24}
+            iconName="Reset"
+          />
+        {/if}
+        <IconButton
+          onClick={() => downloadMode.toggleActiveSelection()}
+          title={state.isSelected ? 'Deselect All' : 'Select All'}
           variant="dark"
+          iconName={state.isSelected ? 'DeselectAll' : 'SelectAll'}
+          iconSize={24}
+        />
+        <IconButton
+          variant="dark"
+          onClick={() => downloadMode.downloadPlaylist()}
+          disabled={downloadMode.selectedStreams.size === 0}
+          title="Download Playlist"
+          iconName="Download"
+          iconSize={16}
+        />
+        <IconButton
+          variant="dark"
+          onClick={() => (downloadMode.isEnabled = false)}
+          title="Close"
+          iconName="Close"
+          iconSize={20}
         />
       </div>
     </div>
