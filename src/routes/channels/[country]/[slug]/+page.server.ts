@@ -19,22 +19,27 @@ export async function entries() {
 export async function load({ params }) {
   const { country, slug } = params
 
-  const channelBuffer = fs.readFileSync(
-    path.resolve(STATIC_DIR, `data/channels/${country}/${slug}/_data.msgpack`)
-  )
-  const channel = unpackObject(channelBuffer)
+  try {
+    const channelBuffer = fs.readFileSync(
+      path.resolve(STATIC_DIR, `data/channels/${country}/${slug}/_data.msgpack`)
+    )
+    const channel = unpackObject(channelBuffer)
 
-  if (!channel) {
-    throw error(404)
-  }
+    if (!channel) {
+      throw error(404)
+    }
 
-  const feedsBuffer = fs.readFileSync(
-    path.resolve(STATIC_DIR, `data/channels/${country}/${slug}/feeds.msgpack`)
-  )
-  const feeds = unpack(new Uint8Array(feedsBuffer))
+    const feedsBuffer = fs.readFileSync(
+      path.resolve(STATIC_DIR, `data/channels/${country}/${slug}/feeds.msgpack`)
+    )
+    const feeds = unpack(new Uint8Array(feedsBuffer))
 
-  return {
-    channel,
-    feeds
+    return { channel, feeds }
+  } catch (err) {
+    if (err.code === 'ENOENT' || err.status === 404) {
+      throw error(404, 'Channel not found')
+    }
+
+    throw err
   }
 }
