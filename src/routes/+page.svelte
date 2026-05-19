@@ -9,6 +9,7 @@
   import { toast } from '@zerodevx/svelte-toast'
   import { search } from '$lib/search.svelte'
   import { url } from '$lib/url.svelte'
+  import { resolve } from '$app/paths'
   import { unpack } from '$lib/utils'
   import { page } from '$app/state'
   import {
@@ -122,7 +123,7 @@
       pushState(channelModal.originUrl, {})
       channelModal.originUrl = null
     } else {
-      replaceState('/', {})
+      replaceState(resolve('/'), {})
     }
     channelModal.currentChannel = null
   }
