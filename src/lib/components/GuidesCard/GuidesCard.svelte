@@ -4,7 +4,7 @@
   import * as Icon from '$lib/icons'
 
   interface Props {
-    guides: Guide.Type
+    guides: Guide.Type[]
     onClose?: () => void
   }
 
