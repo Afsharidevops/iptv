@@ -39,13 +39,14 @@ describe('compile', () => {
     })
 
     files.forEach((filepath: string) => {
-      expect(content(`tests/__data__/output/${filepath}`), filepath).toBe(
-        content(`tests/__data__/expected/compile/${filepath}`)
-      )
+      const actual = content(`tests/__data__/output/${filepath}`)
+      const expected = content(`tests/__data__/expected/compile/${filepath}`)
+
+      expect(actual, filepath).toEqual(expected)
     })
   })
 })
 
-function content(filepath: string) {
-  return fs.readFileSync(pathToFileURL(filepath), { encoding: 'utf8' })
+function content(filepath: string): Buffer {
+  return fs.readFileSync(pathToFileURL(filepath))
 }
