@@ -1,9 +1,9 @@
 <script lang="ts">
   import { HTMLPreview, LogoMenu } from '$lib/components'
-  import type { FeedLogo, ChannelLogo } from '$lib/types'
+  import type { Logo } from '$lib/types'
 
   interface Props {
-    logo: FeedLogo | ChannelLogo
+    logo: Logo.Type
   }
 
   let { logo }: Props = $props()
