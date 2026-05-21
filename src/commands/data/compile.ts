@@ -6,6 +6,7 @@ import * as sdk from '@iptv-org/sdk'
 import { fileURLToPath } from 'url'
 import { Packr } from 'msgpackr'
 import * as api from '$lib/api'
+import pLimit from 'p-limit'
 import {
   BlocklistService,
   CategoryService,
@@ -82,9 +83,9 @@ async function save(data: Compile.Data) {
     return path.replace(/^\/+/, '')
   }
 
-  function pack(data: Compile.PackedData | Compile.PackedData[]) {
-    const packr = new Packr()
+  const packr = new Packr()
 
+  function pack(data: Compile.PackedData | Compile.PackedData[]) {
     if (Array.isArray(data)) {
       const buffers = data.map(item => packr.pack(item))
 
@@ -95,27 +96,33 @@ async function save(data: Compile.Data) {
   }
 
   const staticStorage = new Storage(STATIC_DIR)
+  const limit = pLimit(500)
 
-  await staticStorage.save('data/searchable.msgpack', pack(data.searchable))
-  await staticStorage.save('data/countries.msgpack', pack(data.countries))
-  await staticStorage.save('data/channelStubs.msgpack', pack(data.channelStubs))
-  await staticStorage.save('data/streams.msgpack', pack(data.streams))
+  await Promise.all([
+    limit(() => staticStorage.save('data/searchable.msgpack', pack(data.searchable))),
+    limit(() => staticStorage.save('data/countries.msgpack', pack(data.countries))),
+    limit(() => staticStorage.save('data/channelStubs.msgpack', pack(data.channelStubs))),
+    limit(() => staticStorage.save('data/streams.msgpack', pack(data.streams)))
+  ])
 
   const feedsByChannelId = Map.groupBy(data.feeds, feed => feed.channelId)
   const logosByChannelId = Map.groupBy(data.logos, logo => logo.channelId)
 
   const channelIndex = []
-  for (const channel of data.channels) {
-    await staticStorage.save(normalizePath(channel.dataPath), pack(channel))
+  const channelPromises = data.channels.flatMap(channel => {
+    channelIndex.push(channel.id)
 
     const feeds = feedsByChannelId.get(channel.id) ?? []
-    await staticStorage.save(normalizePath(channel.feedsPath), pack(feeds))
-
     const logos = logosByChannelId.get(channel.id) ?? []
-    await staticStorage.save(normalizePath(channel.logosPath), pack(logos))
 
-    channelIndex.push(channel.id)
-  }
+    return [
+      limit(() => staticStorage.save(normalizePath(channel.dataPath), pack(channel))),
+      limit(() => staticStorage.save(normalizePath(channel.feedsPath), pack(feeds))),
+      limit(() => staticStorage.save(normalizePath(channel.logosPath), pack(logos)))
+    ]
+  })
+
+  await Promise.all(channelPromises)
 
   await staticStorage.save('data/channelIndex.msgpack', pack(channelIndex))
 }
