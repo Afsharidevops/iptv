@@ -1,16 +1,16 @@
 <script lang="ts">
   import { CopyLinkButton, Menu } from '$lib/components'
   import { toast } from '@zerodevx/svelte-toast'
-  import type { Stream } from '$lib/models'
-  import * as StreamMenu from './'
+  import type { SvelteComponent } from 'svelte'
+  import type { Stream } from '$lib/types'
 
   interface Props {
-    stream: Stream
+    stream: Stream.Type
   }
 
   const { stream }: Props = $props()
 
-  let menu: Menu
+  let menu: SvelteComponent
   function closeMenu() {
     if (menu) menu.close()
   }
@@ -22,7 +22,13 @@
 </script>
 
 <Menu bind:this={menu}>
-  <CopyLinkButton link={stream.url} onCopy={onLinkCopy} />
-  <StreamMenu.EditButton {stream} onClick={closeMenu} />
-  <StreamMenu.ReportButton {stream} onClick={closeMenu} />
+  <CopyLinkButton url={stream.url} onCopy={onLinkCopy} />
+  <Menu.Button url={stream.editUrl} label="Edit" iconName="Edit" external onClick={closeMenu} />
+  <Menu.Button
+    url={stream.reportUrl}
+    label="Report"
+    iconName="Alert"
+    external
+    onClick={closeMenu}
+  />
 </Menu>

@@ -1,9 +1,11 @@
-import type { ChannelEncoded } from './channel'
+import type { Stream } from '.'
 
-export type CountryEncoded = {
+export type Type = {
   code: string
   name: string
   languages: string[]
-  flag: string
-  channels: ChannelEncoded[]
+  hasStreams?: boolean
+  streams?: Stream.Snippet[]
+  isExpanded?: boolean
+  flag?: string
 }

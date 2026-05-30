@@ -1,3 +1,7 @@
-import * as sdk from '@iptv-org/sdk'
-
-export type BlocklistRecordEncoded = sdk.Types.BlocklistRecordData
+export type Type = {
+  hash: string
+  channelId: string
+  reason: string
+  ref: string
+  refLabel?: string
+}

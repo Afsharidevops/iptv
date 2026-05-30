@@ -1,14 +1,17 @@
 <script lang="ts">
-  import type { Country } from '$lib/models'
+  import type { Country, Channel } from '$lib/types'
   import * as CountryList from './'
 
   interface Props {
-    countries: Country[]
+    countries: Country.Type[]
+    channelGroups: Record<string, Channel.Stub[]>
   }
 
-  const { countries }: Props = $props()
+  const { countries, channelGroups }: Props = $props()
 </script>
 
 {#each countries as country (country.code)}
-  <CountryList.Item {country} />
+  {#if channelGroups[country.code]}
+    <CountryList.Item {country} channels={channelGroups[country.code]} />
+  {/if}
 {/each}

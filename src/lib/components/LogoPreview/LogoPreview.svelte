@@ -1,51 +1,44 @@
 <script lang="ts">
-  import type { Context } from 'svelte-simple-modal'
-  import type { Channel, Feed } from '$lib/models'
-  import { LogosPopup } from '$lib/components'
-  import { getContext } from 'svelte'
+  import type { Logo } from '$lib/types'
   import * as Icon from '$lib/icons'
 
   interface Props {
-    channel: Channel
-    feed?: Feed
+    logo: Logo.Snippet
+    onClick: () => void
   }
 
-  const { channel, feed = undefined }: Props = $props()
+  const { logo, onClick = () => {} }: Props = $props()
 
-  function getDisplayName() {
-    return feed ? feed.getFullName() : channel.name
-  }
+  let isLoading = $state(true)
 
-  function getLogos() {
-    return feed ? feed.getLogos() : channel.getLogos()
-  }
-
-  const displayName = getDisplayName()
-  const logo = getLogos().first()
-
-  const { open } = getContext<Context>('simple-modal')
-
-  function showLogos() {
-    open(
-      LogosPopup,
-      { channel, feed, variant: 'nested' },
-      { transitionBgProps: { duration: 0 }, transitionWindowProps: { duration: 0 } }
-    )
-  }
+  $effect(() => {
+    if (logo?.url) {
+      isLoading = true
+    }
+  })
 </script>
 
 {#if logo}
   <div class="w-full justify-center items-center flex h-34 relative">
+    {#if isLoading}
+      <div
+        class="absolute bottom-0 left-0 right-0 top-0 flex justify-center items-center z-50 text-gray-400 pointer-events-none"
+      >
+        <Icon.Spinner size={20} />
+      </div>
+    {/if}
     <button
-      onclick={showLogos}
+      onclick={onClick}
       class="cursor-pointer h-34 w-full relative flex justify-center items-center"
       title="Logos"
     >
       <img
         src={logo.url}
-        alt={`${displayName} logo`}
+        alt={`${logo.displayName} logo`}
         title={logo.url}
         referrerpolicy="no-referrer"
+        onload={() => (isLoading = false)}
+        onerror={() => (isLoading = false)}
         class="bg-gray-100 text-sm text-gray-400 dark:text-gray-600 rounded-sm overflow-hidden max-h-full"
         style:max-width={logo.width ? `${logo.width}px` : ''}
       />

@@ -15,8 +15,8 @@ const config = {
     port: 4000
   },
   build: {
-    rollupOptions: {
-      external: ['cli-progress', 'node:fs', 'node:path']
+    rolldownOptions: {
+      external: [/^\/src\/commands\/.*/]
     }
   }
 }

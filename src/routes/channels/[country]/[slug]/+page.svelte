@@ -1,51 +1,35 @@
 <script lang="ts">
   import { NavBar, FeedsCard, ChannelCard } from '$lib/components'
-  import type { Channel } from '$lib/models'
+  import type { Channel, Feed } from '$lib/types'
 
-  interface Props {
+  type Props = {
     data: {
-      channel: Channel
+      channel: Channel.Type
+      feeds: Feed.Type[]
     }
   }
 
   const { data }: Props = $props()
 
-  function getChannel() {
-    return data.channel
-  }
-
-  const channel = getChannel()
-
-  function getTitle() {
-    return channel ? `${channel.getUniqueName()} • iptv-org` : 'iptv-org'
-  }
-
-  function getDescription() {
-    return `Detailed description of ${channel ? channel.getUniqueName() : ''}.`
-  }
-
-  function getSchema() {
-    /* eslint-disable-next-line */
-    return `<script type="application/ld+json">${JSON.stringify(channel.getStructuredData())}<\/script>`
-  }
+  const channel = $derived(data.channel)
+  const feeds = $derived(data.feeds)
 </script>
 
 <svelte:head>
-  <title>{getTitle()}</title>
-  <meta name="description" content={getDescription()} />
+  <title>{`${channel.uniqueName} • iptv-org`}</title>
+  <meta name="description" content={`Detailed description of ${channel.uniqueName}.`} />
 
-  {@html getSchema()}
+  <!-- eslint-disable-next-line no-useless-escape -->
+  {@html `<script type="application/ld+json">${JSON.stringify(channel.structuredData)}<\/script>`}
 </svelte:head>
 
-<header class="fixed z-40 w-full min-w-[360px] top-0">
+<header class="sticky z-40 top-0 left-0 right-0 min-w-[360px]">
   <NavBar version="channelPage" />
 </header>
 
-<main class="bg-slate-50 dark:bg-primary-850 min-h-screen min-w-[360px] pt-16">
+<main class="bg-slate-50 dark:bg-primary-850 min-h-screen min-w-[360px]">
   <section class="container max-w-3xl mx-auto px-2 pt-1 sm:pt-6 pb-20 flex-col space-y-4">
     <ChannelCard {channel} variant="channelPage" />
-    {#if channel.getFeeds().isNotEmpty()}
-      <FeedsCard {channel} variant="channelPage" />
-    {/if}
+    <FeedsCard {feeds} addFeedUrl={channel.addFeedUrl} variant="channelPage" />
   </section>
 </main>

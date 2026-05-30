@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CloseButton, CodeBlock, Card } from '$lib/components'
+  import { IconButton, CodeBlock, Card } from '$lib/components'
 
   interface Props {
     onClose?: () => void
@@ -64,7 +64,7 @@
   {/snippet}
   {#snippet headerRight()}
     <div>
-      <CloseButton onClick={onClose} />
+      <IconButton onClick={onClose} iconName="Close" iconSize={20} title="Close" />
     </div>
   {/snippet}
   {#snippet body()}

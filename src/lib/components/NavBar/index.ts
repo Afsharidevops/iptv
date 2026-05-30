@@ -1,5 +1,1 @@
-export { default as CreatePlaylistButton } from './CreatePlaylistButton.svelte'
-export { default as GitHubButton } from './GitHubButton.svelte'
 export { default as Logo } from './Logo.svelte'
-export { default as SearchButton } from './SearchButton.svelte'
-export { default as ToggleModeButton } from './ToggleModeButton.svelte'

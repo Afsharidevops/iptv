@@ -1,24 +1,34 @@
-import * as sdk from '@iptv-org/sdk'
-import type { ChannelEncoded } from './channel'
-import type { LogoEncoded } from './logo'
-import type { StreamEncoded } from './stream'
-import type { BroadcastAreaEncoded } from './broadcastArea'
+import type { HTMLPreviewField } from '$lib/components/HTMLPreview/types'
+import type { Guide, Stream } from '.'
+import * as Logo from './logo'
 
-export type FeedEncoded = {
-  channel: string
+export type Type = {
+  streamId: string
+  channelId: string
   id: string
   name: string
-  alt_names: string[]
-  is_main: boolean
-  broadcast_area: string[]
+  altNames: string[]
+  isMain: boolean
+  format: string
   languages: string[]
   timezones: string[]
-  format: string
-  logos: LogoEncoded[]
-  streams: StreamEncoded[]
-  guides: sdk.Types.GuideData[]
-  _languages: sdk.Types.LanguageData[]
-  broadcastArea?: BroadcastAreaEncoded
-  _timezones: sdk.Types.TimezoneData[]
-  _channel?: ChannelEncoded
+  broadcastArea: string[]
+  hasStreams?: boolean
+  streamsCount?: number
+  hasGuides?: boolean
+  guidesCount?: number
+  hasLogos?: boolean
+  mainLogo?: Logo.Snippet
+  pageUrl?: string
+  addLogoUrl?: string
+  addStreamUrl?: string
+  requestLinkUrl?: string
+  editUrl?: string
+  removeUrl?: string
+  fieldset?: HTMLPreviewField[]
+  isBlocked?: boolean
+  isClosed?: boolean
+  guides?: Guide.Type[]
+  streams?: Stream.Type[]
+  logos?: Logo.Type[]
 }

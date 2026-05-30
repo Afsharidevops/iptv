@@ -1,8 +1,8 @@
 <script lang="ts">
   import { SvelteToast } from '@zerodevx/svelte-toast'
-  import Modal from 'svelte-simple-modal'
+  import { Modal } from '$lib/components'
   import type { Snippet } from 'svelte'
-  import './+layout.css'
+  import '../app.css'
 
   interface Props {
     children?: Snippet
@@ -11,7 +11,7 @@
   let { children }: Props = $props()
 
   const toastOptions = {
-    duration: 2000,
+    duration: 5000,
     reversed: true,
     intro: { x: -192 },
     dismissable: false,
@@ -35,30 +35,27 @@
   </script>
 </svelte:head>
 
-<Modal
-  unstyled={true}
-  classBg="fixed top-0 left-0 z-70 w-screen h-screen flex flex-col bg-black/[.7] overflow-y-scroll"
-  closeButton={false}
->
+<Modal>
   {@render children?.()}
 </Modal>
 
-<SvelteToast options={toastOptions} />
+<div class="text-sm">
+  <SvelteToast options={toastOptions} />
+</div>
 
 <style>
   :root {
     --toastContainerTop: auto;
     --toastContainerRight: auto;
-    --toastContainerBottom: 1rem;
-    --toastContainerLeft: 1.5rem;
+    --toastContainerBottom: 2rem;
+    --toastContainerLeft: 1rem;
   }
 
   :global(.custom) {
-    --toastWidth: 14rem;
     --toastMinHeight: auto;
-    --toastBackground: #222;
-    --toastMsgPadding: 8px 10px;
+    --toastBackground: #1e232f;
+    --toastMsgPadding: 12px 12px;
     --toastBarHeight: 0;
-    --toastBorderRadius: 0.25rem;
+    --toastBorderRadius: 0.375rem;
   }
 </style>

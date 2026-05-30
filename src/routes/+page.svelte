@@ -1,138 +1,73 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, pushState } from '$app/navigation'
-  import { setSearchParam, setPageTitle } from '$lib/navigation'
-  import { onMount, getContext, untrack } from 'svelte'
-  import type { Context } from 'svelte-simple-modal'
-  import { DEFAULT_QUERY } from '../constants'
-  import { Country } from '$lib/models'
+  import { afterNavigate, beforeNavigate, pushState, replaceState } from '$app/navigation'
+  import { downloadMode } from '$lib/downloadMode.svelte'
+  import { channelModal } from '$lib/channelModal.svelte'
+  import { getContext, onMount, untrack } from 'svelte'
+  import type { ModalContext } from '$lib/modal.svelte'
+  import type { Channel, Country } from '$lib/types'
+  import { DEFAULT_QUERY } from '$lib/constants'
+  import { toast } from '@zerodevx/svelte-toast'
+  import { search } from '$lib/search.svelte'
+  import { url } from '$lib/url.svelte'
   import { resolve } from '$app/paths'
+  import { unpack } from '$lib/utils'
   import { page } from '$app/state'
-  import * as api from '$lib/api'
   import {
-    SearchSyntaxPopup,
-    ChannelPopup,
+    SearchSyntaxCard,
     CountryList,
     SearchField,
     BottomBar,
-    NavBar
+    NavBar,
+    ChannelModal
   } from '$lib/components'
-  import store, {
-    updateSearchResults,
-    searchResults,
-    downloadMode,
-    isSearching,
-    query
-  } from '$lib/store'
 
-  const { open, close } = getContext<Context>('simple-modal')
+  const modal = getContext<ModalContext>('modal')
 
-  let isChannelPopupOpened = false
-
-  $effect(() => {
-    const showModal = !!page.state.showModal
-    const channelId = page.state.channelId
-
-    if (showModal) {
-      const channelsKeyById = api.processedData?.channelsKeyById
-      if (!channelsKeyById) return
-
-      const channel = channelsKeyById.get(channelId)
-      if (!channel) return
-
-      openChannelPopup(channel)
-      setPageTitle(channel.getUniqueName())
-    } else if (isChannelPopupOpened) {
-      closeChannelPopup()
-      setPageTitle('')
-    }
-  })
-
-  function closeChannelPopup() {
-    close({
-      onClosed: () => {
-        isChannelPopupOpened = false
-        setPageTitle('')
-      }
-    })
-  }
-
-  function onChannelPopupClosed() {
-    pushState(resolve('/'), { showModal: false })
-  }
-
-  function openChannelPopup(channel) {
-    untrack(() => {
-      if (isChannelPopupOpened) {
-        close({
-          onClosed: () => {
-            isChannelPopupOpened = true
-            open(
-              ChannelPopup,
-              { channel },
-              { transitionBgProps: { duration: 0 }, transitionWindowProps: { duration: 0 } },
-              {
-                onClosed: onChannelPopupClosed
-              }
-            )
-          }
-        })
-      } else {
-        isChannelPopupOpened = true
-        open(
-          ChannelPopup,
-          { channel },
-          { transitionBgProps: { duration: 0 }, transitionWindowProps: { duration: 0 } },
-          {
-            onClosed: onChannelPopupClosed
-          }
-        )
-      }
-    })
-  }
-
-  let countries: Country[] = $state([])
   let isLoading = $state(true)
+  let countries: Country.Type[] = $state([])
+  let channels: Channel.Stub[] = $state([])
 
   onMount(async () => {
-    isLoading = true
+    try {
+      const [countriesBuffer, channelStubsBuffer] = await Promise.all([
+        fetch('/data/countries.msgpack').then(res => res.arrayBuffer()),
+        fetch('/data/channelStubs.msgpack').then(res => res.arrayBuffer())
+      ])
 
-    const data = await api.loadData()
+      countries = unpack(countriesBuffer)
+      channels = unpack(channelStubsBuffer)
 
-    countries = data.countries
-
-    store.init(data)
-
-    isLoading = false
-
-    updateSearchResults()
+      search.init()
+      downloadMode.init()
+    } catch (error) {
+      toast.push(error.message)
+    }
   })
 
   beforeNavigate(({ type }) => {
     if (type === 'popstate') {
-      isSearching.set(true)
+      search.isSearching = true
     }
   })
 
   afterNavigate(() => {
     const q = page.url.searchParams.get('q')
-    const searchQuery = typeof q === 'string' ? decodeURIComponent(q) : DEFAULT_QUERY + ' '
-
-    query.set(searchQuery)
-
-    if (isLoading) return
-
-    updateSearchResults()
+    search.query = typeof q === 'string' ? decodeURIComponent(q) : DEFAULT_QUERY + ' '
+    search.submit()
   })
 
-  let scrollY = $state(0)
+  $effect(() => {
+    channelModal.updateChannel(page.state?.channelId)
+  })
 
-  function showSearchSyntax(event) {
+  $effect(() => {
+    const isSearchReady = search.isReady
+    isLoading = !isSearchReady
+  })
+
+  function showSearchSyntax(event: MouseEvent) {
     event.preventDefault()
-    open(
-      SearchSyntaxPopup,
-      {},
-      { transitionBgProps: { duration: 0 }, transitionWindowProps: { duration: 0 } }
-    )
+    modal.open(SearchSyntaxCard, { onClose: () => modal.close() })
   }
 
   let searchField: SearchField
@@ -140,27 +75,91 @@
     if (searchField) searchField.focus()
   }
 
-  function onSearch() {
-    setSearchParam('q', $query)
+  let scrollY = $state(0)
+
+  const isSpinnerActive = $derived(isLoading || search.isSearching)
+
+  const channelGroups = $derived.by(() => {
+    void search.searchResults.size
+    const hasQuery = untrack(() => !!search.query)
+
+    if (!hasQuery) return Object.groupBy(channels, channel => channel.countryCode)
+
+    const groups = {}
+    for (const channel of channels) {
+      if (!search.searchResults.size) break
+      if (!search.searchResults.has(channel.id)) continue
+
+      if (!groups[channel.countryCode]) {
+        groups[channel.countryCode] = []
+      }
+
+      groups[channel.countryCode].push(channel)
+    }
+
+    return groups
+  })
+
+  const countriesDisplay = $derived.by(() => {
+    const currentGroups = channelGroups
+    const query = untrack(() => search.query)
+    const hasQuery = !!query && query.trim() !== DEFAULT_QUERY
+
+    const results = []
+    for (const country of countries) {
+      const isExpanded = hasQuery && !!currentGroups[country.code]
+
+      results.push({
+        ...country,
+        isExpanded
+      })
+    }
+
+    return results
+  })
+
+  function closeChannelModal() {
+    if (channelModal.originUrl) {
+      pushState(channelModal.originUrl, {})
+      channelModal.originUrl = null
+    } else {
+      replaceState(resolve('/'), {})
+    }
+    channelModal.currentChannel = null
   }
 
-  function clearQuery() {
-    query.set('')
-    focusOnSearchField()
-  }
+  $effect(() => {
+    const channel = channelModal.currentChannel
+
+    untrack(() => {
+      if (channel) {
+        modal.open(
+          ChannelModal,
+          { channel, onClose: closeChannelModal },
+          { onClose: closeChannelModal }
+        )
+      } else {
+        modal.close()
+      }
+    })
+  })
 </script>
 
 <svelte:window bind:scrollY />
 <svelte:head>
-  <title>iptv-org</title>
+  {#if channelModal.currentChannel}
+    <title>{channelModal.currentChannel.uniqueName} · iptv-org</title>
+  {:else}
+    <title>iptv-org</title>
+  {/if}
   <meta name="description" content="iptv-org is user editable database for TV channels" />
   <link rel="canonical" href="https://iptv-org.github.io/" />
 </svelte:head>
 
 <header
   class:absolute={scrollY <= 150}
-  class:fixed={scrollY > 150}
-  class="z-20 w-full min-w-[360px] flex items-center"
+  class:sticky={scrollY > 150}
+  class="z-20 left-0 right-0 min-w-[360px] flex items-center"
   style="top: {scrollY > 150 && scrollY <= 210 ? scrollY - 210 : 0}px"
 >
   <NavBar onSearchButtonClick={focusOnSearchField} />
@@ -168,12 +167,21 @@
 
 <main class="bg-slate-50 dark:bg-primary-850 min-h-screen min-w-[360px]">
   <section class="max-w-[960px] mx-auto px-2 pt-16 sm:pt-20 pb-20 overflow-hidden min-h-full">
-    <SearchField bind:this={searchField} onSubmit={onSearch} onClear={clearQuery} />
+    <SearchField
+      bind:this={searchField}
+      onSubmit={() => {
+        url.setSearchParam(search.query)
+      }}
+      onClear={() => {
+        search.query = ''
+        focusOnSearchField()
+      }}
+    />
     <div class="pt-2 pb-6 flex justify-between px-1">
       <span class="inline-flex text-sm text-gray-500 dark:text-gray-400 font-mono pt-0.5"
         >Found&nbsp;
-        <span class:animate-spin={isLoading}
-          >{!isLoading ? $searchResults.length.toLocaleString() : '/'}</span
+        <span class:animate-spin={isSpinnerActive}
+          >{isSpinnerActive ? '/' : search.searchResults.size.toLocaleString()}</span
         >
         &nbsp;channel(s)</span
       >
@@ -191,11 +199,12 @@
       >
         loading...
       </div>
+    {:else}
+      <CountryList countries={countriesDisplay} {channelGroups} />
     {/if}
-    <CountryList {countries} />
   </section>
 </main>
 
-{#if $downloadMode}
+{#if downloadMode.isEnabled}
   <BottomBar />
 {/if}

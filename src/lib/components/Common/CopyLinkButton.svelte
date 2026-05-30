@@ -3,14 +3,14 @@
   import * as Icon from '$lib/icons'
 
   interface Props {
-    link: string
+    url: string
     onCopy?: () => void
   }
 
-  const { link, onCopy = () => {} }: Props = $props()
+  const { url, onCopy = () => {} }: Props = $props()
 </script>
 
-<Clipboard text={link} {onCopy}>
+<Clipboard text={url} {onCopy}>
   {#snippet children({ copy })}
     <Button onClick={copy} label="Copy Link">
       {#snippet left()}

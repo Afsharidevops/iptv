@@ -1,27 +1,25 @@
 <script lang="ts">
+  import type { Channel } from '$lib/types'
   import { Badge } from '$lib/components'
-  import { Channel } from '$lib/models'
   import { tippy } from '$lib/actions'
 
   interface Props {
-    channel: Channel
+    channel: Channel.Type | Channel.Stub
   }
 
   let { channel }: Props = $props()
+
+  const message = $derived.by(() => {
+    return channel.closed ? `closed: ${channel.closed}` : ''
+  })
 </script>
 
 <Badge>
-  {#if channel.closed}
-    <div
-      use:tippy={{
-        content: `closed: ${channel.closed}`,
-        allowHTML: true,
-        interactive: true
-      }}
-    >
-      Closed
-    </div>
-  {:else}
+  <div
+    use:tippy={{
+      content: message
+    }}
+  >
     Closed
-  {/if}
+  </div>
 </Badge>

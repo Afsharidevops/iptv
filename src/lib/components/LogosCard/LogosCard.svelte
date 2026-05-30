@@ -1,21 +1,16 @@
 <script lang="ts">
-  import { Card, CloseButton, LogoList } from '$lib/components'
-  import type { Channel, Feed } from '$lib/models'
+  import { Card, IconButton, LogoList } from '$lib/components'
+  import type { Logo } from '$lib/types'
   import * as Icon from '$lib/icons'
-  import * as LogosCard from './'
 
   interface Props {
-    channel: Channel
-    feed?: Feed
+    logos: Logo.Type[]
     onClose?: () => void
     title?: string
+    addLogoUrl: string
   }
 
-  const { title = 'Logos', channel, feed = undefined, onClose = () => {} }: Props = $props()
-
-  function getLogos() {
-    return feed ? feed.getLogos() : channel.getLogos()
-  }
+  const { title = 'Logos', logos, addLogoUrl, onClose = () => {} }: Props = $props()
 </script>
 
 <Card>
@@ -30,13 +25,18 @@
   {/snippet}
   {#snippet headerRight()}
     <div class="inline-flex">
-      <LogosCard.AddLogoIconButton {channel} {feed} />
-      <CloseButton onClick={onClose} />
+      <IconButton
+        onClick={() => window.open(addLogoUrl, '_blank')}
+        title="Add Logo"
+        iconName="AddCircle"
+        iconSize={20}
+      />
+      <IconButton onClick={onClose} iconName="Close" iconSize={20} title="Close" />
     </div>
   {/snippet}
   {#snippet body()}
     <div class="flex flex-col gap-2 p-2 sm:p-5 sm:pt-3">
-      <LogoList logos={getLogos()} />
+      <LogoList {logos} />
     </div>
   {/snippet}
 </Card>

@@ -1,17 +1,15 @@
 <script lang="ts">
-  import type { Collection } from '@freearhey/core'
-  import type { Channel, Feed } from '$lib/models'
+  import type { Feed } from '$lib/types'
   import * as FeedList from './'
 
   interface Props {
-    channel: Channel
-    feeds: Collection<Feed>
+    feeds: Feed.Type[]
     onClose?: () => void
   }
 
-  const { channel, feeds, onClose = () => {} }: Props = $props()
+  const { feeds, onClose = () => {} }: Props = $props()
 </script>
 
-{#each feeds.all() as feed (feed.uuid)}
-  <FeedList.Item {channel} {feed} {onClose} />
+{#each feeds as feed (feed.streamId)}
+  <FeedList.Item {feed} {onClose} />
 {/each}

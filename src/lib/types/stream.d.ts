@@ -1,8 +1,27 @@
-import * as sdk from '@iptv-org/sdk'
-import type { FeedEncoded } from './feed'
-import type { ChannelEncoded } from './channel'
+import type { HTMLPreviewField } from '$lib/components/HTMLPreview/types'
 
-export type StreamEncoded = sdk.Types.StreamData & {
-  _feed?: FeedEncoded
-  _channel?: ChannelEncoded
+export type Type = {
+  hash: string
+  id: string
+  channelId: string
+  feedId: string
+  fullTitle: string
+  verticalResolution: number
+  url: string
+  title: string
+  referrer: string
+  userAgent: string
+  quality: string
+  label: string
+  countryCode: string
+  editUrl?: string
+  reportUrl?: string
+  logoUrl?: string
+  categories?: string[]
+  fieldset?: HTMLPreviewField[]
+}
+
+export type Snippet = {
+  channelId: string
+  hash: string
 }

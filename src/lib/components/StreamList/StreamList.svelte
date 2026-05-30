@@ -1,15 +1,14 @@
 <script lang="ts">
-  import type { Collection } from '@freearhey/core'
-  import type { Stream } from '$lib/models'
+  import type { Stream } from '$lib/types'
   import * as StreamList from './'
 
   interface Props {
-    streams: Collection<Stream>
+    streams: Stream.Type[]
   }
 
   const { streams }: Props = $props()
 </script>
 
-{#each streams.all() as stream (stream.uuid)}
+{#each streams as stream (stream.hash)}
   <StreamList.Item {stream} />
 {/each}

@@ -1,29 +1,45 @@
-import type { Channel } from '$lib/models/channel'
+import { unpack, unpackObject } from '$lib/utils'
+import { STATIC_DIR } from '$lib/constants'
 import { error } from '@sveltejs/kit'
-import * as api from '$lib/api'
-
-const data = await api.loadDataFromDisk()
+import path from 'path'
+import fs from 'fs'
 
 export async function entries() {
-  return data.channels.map((channel: Channel) => {
-    const [slug, country] = channel.id.split('.')
+  const channelsBuffer = fs.readFileSync(path.resolve(STATIC_DIR, 'data/channelIndex.msgpack'))
+  const channels = unpack(channelsBuffer)
 
-    return {
-      country,
-      slug
-    }
+  if (!Array.isArray(channels)) return []
+
+  return channels.map(id => {
+    const [slug, country] = id.split('.')
+    return { country, slug }
   })
 }
 
 export async function load({ params }) {
-  const channelId = `${params.slug}.${params.country}`
-  const channel = data.channels.find((channel: Channel) => channel.id === channelId)
+  const { country, slug } = params
 
-  if (!channel) {
-    throw error(404)
-  }
+  try {
+    const channelBuffer = fs.readFileSync(
+      path.resolve(STATIC_DIR, `data/channels/${country}/${slug}/_data.msgpack`)
+    )
+    const channel = unpackObject(channelBuffer)
 
-  return {
-    channel
+    if (!channel) {
+      throw error(404)
+    }
+
+    const feedsBuffer = fs.readFileSync(
+      path.resolve(STATIC_DIR, `data/channels/${country}/${slug}/feeds.msgpack`)
+    )
+    const feeds = unpack(new Uint8Array(feedsBuffer))
+
+    return { channel, feeds }
+  } catch (err) {
+    if (err.code === 'ENOENT' || err.status === 404) {
+      throw error(404, 'Channel not found')
+    }
+
+    throw err
   }
 }
