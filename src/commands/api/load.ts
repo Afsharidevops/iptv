@@ -1,4 +1,4 @@
-import { DATA_DIR } from '$lib/constants'
+import { DATA_DIR } from '../../lib/constants'
 import cliProgress from 'cli-progress'
 import * as sdk from '@iptv-org/sdk'
 
