@@ -110,5 +110,6 @@
     ],
     "is_nsfw": false,
     "website": null
-  }
+  },
+  {"id":"AdaTV.cy","name":"Ada TV","alt_names":[],"network":null,"owners":[],"country":"CY","categories":["general"],"is_nsfw":false,"launched":"2008-07-20","closed":null,"replaced_by":null,"website":"http://adatv.tv/"}
 ]
