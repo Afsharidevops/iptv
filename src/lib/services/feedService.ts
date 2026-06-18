@@ -132,9 +132,21 @@ export class FeedService {
       locations: Location.Type[]
       timezones: Timezone.Type[]
       languages: Language.Type[]
+      isClosed: boolean
+      isBlocked: boolean
     }
   ): Feed.Type {
-    const { streams, guides, logos, fullName, locations, timezones, languages } = data
+    const {
+      streams,
+      guides,
+      logos,
+      fullName,
+      locations,
+      timezones,
+      languages,
+      isClosed,
+      isBlocked
+    } = data
     const { channelId, id: feedId } = feed
 
     const streamId = StreamService.getId({ channelId, feedId })
@@ -142,6 +154,8 @@ export class FeedService {
 
     return {
       ...feed,
+      isClosed,
+      isBlocked,
       hasStreams: !!streams.length,
       streamsCount: streams.length,
       streams,
