@@ -88,6 +88,8 @@ export class DataManager {
 
   getFeeds(): Feed.Type[] {
     return this.services.feed.getFeeds().map(feed => {
+      const channel = this.services.channel.getChannel(feed.channelId)
+      const blocklistRecords = this.getChannelBlocklistRecords(channel)
       const data = {
         streams: this.getFeedStreams(feed).map(stream => {
           return StreamService.getEnrichedStream(stream, {
@@ -108,7 +110,9 @@ export class DataManager {
         fullName: this.getFeedFullName(feed),
         locations: this.getFeedLocations(feed),
         timezones: this.getFeedTimezones(feed),
-        languages: this.getFeedLanguages(feed)
+        languages: this.getFeedLanguages(feed),
+        isClosed: ChannelService.isClosed(channel),
+        isBlocked: !!blocklistRecords.length
       }
 
       return FeedService.getEnrichedFeed(feed, data)
