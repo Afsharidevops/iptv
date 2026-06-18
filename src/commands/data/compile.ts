@@ -30,11 +30,11 @@ export default async function main() {
   await save(compiled)
 }
 
-async function load(): Promise<sdk.Types.RawData> {
+export async function load(): Promise<sdk.Types.RawData> {
   return await api.loadDataFromDisk()
 }
 
-function compile(data: sdk.Types.RawData): Compile.Data {
+export function compile(data: sdk.Types.RawData): Compile.Data {
   const locations = []
   data.cities.forEach(city => {
     locations.push({ code: `ct/${city.code}`, name: city.name })
@@ -78,7 +78,7 @@ function compile(data: sdk.Types.RawData): Compile.Data {
   return output
 }
 
-async function save(data: Compile.Data) {
+export async function save(data: Compile.Data) {
   function normalizePath(path: string): string {
     return path.replace(/^\/+/, '')
   }
