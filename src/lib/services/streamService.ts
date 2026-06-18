@@ -16,10 +16,11 @@ export class StreamService {
       const id = StreamService.getId({ channelId: data.channel, feedId: data.feed })
       if (!id) continue
 
-      const hash = hashObject(data)
-
       let [, countryCode] = data.channel.split('.')
+      if (!countryCode) continue
       countryCode = countryCode.toUpperCase()
+
+      const hash = hashObject(data)
 
       const stream: Stream.Type = {
         hash,

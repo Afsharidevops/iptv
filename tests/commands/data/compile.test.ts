@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, vi, beforeAll, afterEach, afterAll } from 'vitest'
-import compile from '../../../src/commands/data/compile'
+import compileCommand, { compile, load } from '../../../src/commands/data/compile'
 import { pathToFileURL } from 'node:url'
 import * as glob from 'glob'
 import fs from 'fs-extra'
@@ -11,7 +11,9 @@ vi.hoisted(() => {
 
 describe('compile', () => {
   beforeAll(() => {
-    vi.spyOn(console, 'log').mockImplementation(() => {})
+    if (process.env.DEBUG !== 'true') {
+      vi.spyOn(console, 'log').mockImplementation(() => {})
+    }
   })
 
   afterAll(() => {
@@ -25,11 +27,20 @@ describe('compile', () => {
 
   afterEach(() => {})
 
+  test('compile()', async () => {
+    const rawData = await load()
+    const output = compile(rawData)
+
+    expect(output.feeds[0].streamId).toBe('AndorraTV.ad@SD')
+    expect(output.feeds[0].isBlocked).toBe(true)
+    expect(output.feeds[0].isClosed).toBe(true)
+  })
+
   test('it can compile valid output', async () => {
     expect(process.env.DATA_DIR).toBe('tests/__data__/input/data')
     expect(process.env.STATIC_DIR).toBe('tests/__data__/output')
 
-    await compile()
+    await compileCommand()
 
     const files = glob.sync('tests/__data__/expected/compile/**/*.msgpack').map(filepath => {
       const fileUrl = pathToFileURL(filepath).toString()
