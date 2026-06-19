@@ -9,6 +9,6 @@
   const { logos }: Props = $props()
 </script>
 
-{#each logos as logo (logo.url)}
+{#each logos as logo (logo.streamId + logo.url)}
   <LogoList.Item {logo} />
 {/each}
