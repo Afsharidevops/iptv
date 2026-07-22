@@ -9,7 +9,7 @@
   import { toast } from '@zerodevx/svelte-toast'
   import { search } from '$lib/search.svelte'
   import { url } from '$lib/url.svelte'
-  import { resolve } from '$app/paths'
+  import { asset, resolve } from '$app/paths'
   import { unpack } from '$lib/utils'
   import { page } from '$app/state'
   import {
@@ -30,8 +30,8 @@
   onMount(async () => {
     try {
       const [countriesBuffer, channelStubsBuffer] = await Promise.all([
-        fetch('/data/countries.msgpack').then(res => res.arrayBuffer()),
-        fetch('/data/channelStubs.msgpack').then(res => res.arrayBuffer())
+        fetch(asset('/data/countries.msgpack')).then(res => res.arrayBuffer()),
+        fetch(asset('/data/channelStubs.msgpack')).then(res => res.arrayBuffer())
       ])
 
       countries = unpack(countriesBuffer)
