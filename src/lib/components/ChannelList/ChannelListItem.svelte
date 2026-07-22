@@ -5,10 +5,12 @@
   import { pluralize, unpack } from '$lib/utils'
   import { toast } from '@zerodevx/svelte-toast'
   import { pushState } from '$app/navigation'
+  import { resolve } from '$app/paths'
   import type { Channel, Feed, Logo } from '$lib/types'
   import { fade } from 'svelte/transition'
   import { getContext } from 'svelte'
   import * as Icon from '$lib/icons'
+
   import {
     BlockedBadge,
     ClosedBadge,
@@ -24,13 +26,23 @@
 
   const { channel }: Props = $props()
 
-  async function openChannel(event: MouseEvent) {
-    event.preventDefault()
-
+  function getChannelPath() {
     const [channelSlug, countryCode] = channel.id.split('.')
 
+    return resolve('/channels/[country]/[slug]', {
+      country: countryCode,
+      slug: channelSlug
+    })
+  }
+
+  function openChannel(event: MouseEvent) {
+    event.preventDefault()
+
     channelModal.setOriginUrl(new URL(window.location.href))
-    pushState(`/channels/${countryCode}/${channelSlug}`, { channelId: channel.id })
+
+    pushState(getChannelPath(), {
+      channelId: channel.id
+    })
   }
 
   const modal = getContext<ModalContext>('modal')
@@ -41,7 +53,6 @@
 
     try {
       const feedsBuffer = await fetch(channel.feedsPath).then(res => res.arrayBuffer())
-
       const feeds = unpack<Feed.Type>(feedsBuffer)
 
       modal.open(FeedsCard, {
@@ -61,7 +72,6 @@
 
     try {
       const logosBuffer = await fetch(channel.logosPath).then(res => res.arrayBuffer())
-
       const logos = unpack<Logo.Type>(logosBuffer)
 
       modal.open(LogosCard, {
@@ -84,9 +94,10 @@
 >
   <SelectButton streams={channel.streams} />
 </div>
+
 <div
   class="border-b last:border-b-0 last:rounded-b-md border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-primary-750 min-h-16 sm:h-16 py-2 flex items-center relative"
-  style="content-visibility: auto; contain-intrinsic-size: auto 64px; "
+  style="content-visibility: auto; contain-intrinsic-size: auto 64px;"
 >
   <div class="px-4 sm:pl-10 sm:pr-16 w-28 sm:w-[200px] flex shrink-0 items-center justify-center">
     <div class="inline-flex items-center justify-center whitespace-nowrap overflow-hidden">
@@ -111,28 +122,32 @@
       {/if}
     </div>
   </div>
+
   <div class="w-full sm:w-77 px-2 sm:shrink-0 overflow-hidden sm:overflow-auto">
     <div class="flex items-center space-x-2 text-left">
       <a
         onclick={openChannel}
-        href={channel.pagePath}
+        href={getChannelPath()}
         tabindex="0"
         class="text-gray-600 dark:text-white hover:underline hover:text-blue-400 truncate whitespace-nowrap"
         title={channel.name}
       >
         {channel.name}
       </a>
+
       {#if channel.isClosed}
         <div class="hidden sm:inline">
           <ClosedBadge {channel} />
         </div>
       {/if}
+
       {#if channel.isBlocked}
         <div class="hidden sm:inline">
           <BlockedBadge {channel} />
         </div>
       {/if}
     </div>
+
     {#if channel.hasAltNames}
       <div
         class="text-sm text-gray-400 dark:text-gray-400 line-clamp-1"
@@ -148,6 +163,7 @@
           <ClosedBadge {channel} />
         </div>
       {/if}
+
       {#if channel.isBlocked}
         <div class="inline sm:hidden">
           <BlockedBadge {channel} />
@@ -155,9 +171,11 @@
       {/if}
     </div>
   </div>
+
   <div class="w-54 sm:w-[280px] px-4 hidden lg:flex sm:shrink-0">
     <CodeBlock>{channel.id}</CodeBlock>
   </div>
+
   <div class="sm:w-full px-3 sm:pl-4 sm:pr-5 sm:w-20">
     <div class="text-right flex justify-end space-x-3 items-center">
       {#if channel.feedsCount}
@@ -167,7 +185,9 @@
         >
           <Icon.Feed size={20} />
           <div>{channel.feedsCount}</div>
-          <div class="hidden md:block">{pluralize(channel.feedsCount, 'feed')}</div>
+          <div class="hidden md:block">
+            {pluralize(channel.feedsCount, 'feed')}
+          </div>
         </button>
       {/if}
     </div>
