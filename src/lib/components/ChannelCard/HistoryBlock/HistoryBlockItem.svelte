@@ -4,6 +4,7 @@
   import * as Icon from '$lib/icons'
   import { page } from '$app/state'
   import { pushState } from '$app/navigation'
+  import { resolve } from '$app/paths'
 
   interface Props {
     item: Channel.HistoryItem
@@ -13,6 +14,15 @@
   const { item, isSelected = false }: Props = $props()
 
   const channel = $derived(item.channel)
+
+  function getChannelPath() {
+    const [channelSlug, countryCode] = channel.id.split('.')
+
+    return resolve('/channels/[country]/[slug]', {
+      country: countryCode,
+      slug: channelSlug
+    })
+  }
 
   function onClick(event: MouseEvent) {
     if (page.route.id !== '/') return
@@ -25,9 +35,7 @@
   }
 
   function openChannel() {
-    const [channelSlug, countryCode] = channel.id.split('.')
-
-    pushState(`/channels/${countryCode}/${channelSlug}`, {
+    pushState(getChannelPath(), {
       channelId: channel.id
     })
   }
@@ -37,8 +45,8 @@
   class="p-2.5 rounded-md cursor-pointer"
   class:selected={isSelected}
   onclick={onClick}
-  href={channel.pagePath}
-  data-sveltekit-reload={page.url.pathname !== '/'}
+  href={getChannelPath()}
+  data-sveltekit-reload={page.route.id !== '/'}
   tabindex="0"
   title={channel.uniqueName}
   id={channel.id}
@@ -60,10 +68,12 @@
         <Icon.NoImage size={30} class="text-gray-400" />
       {/if}
     </div>
+
     <div class="text-sm overflow-hidden w-25 text-left">
       <div class="truncate text-gray-900 dark:text-gray-100">
         {channel.uniqueName}
       </div>
+
       {#if channel.launchedYear || channel.closedYear}
         <div class="flex space-x-[2px] truncate text-gray-400">
           {#if channel.launchedYear}
@@ -71,6 +81,7 @@
           {:else}
             <div>?</div>
           {/if}
+
           {#if channel.closedYear}
             <div>-</div>
             <div>{channel.closedYear}</div>
