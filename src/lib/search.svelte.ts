@@ -1,6 +1,7 @@
 import SearchWorker from '$lib/workers/search.worker?worker'
 import { SvelteSet } from 'svelte/reactivity'
 import { toast } from '@zerodevx/svelte-toast'
+import { asset } from '$app/paths'
 
 class SearchState {
   query = $state('')
@@ -14,7 +15,12 @@ class SearchState {
 
   init() {
     this.searchWorker = new SearchWorker()
-    this.searchWorker.postMessage({ type: 'INIT' })
+    this.searchWorker.postMessage({
+      type: 'INIT',
+      payload: {
+        dataUrl: asset('/data/searchable.msgpack')
+      }
+    })
     this.searchWorker.onmessage = (event: MessageEvent) => {
       const { type, payload } = event.data
 
