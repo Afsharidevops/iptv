@@ -1,5 +1,6 @@
 import type { Stream } from '$lib/types'
 import { unpack } from '$lib/utils'
+import { asset } from '$app/paths'
 
 self.onmessage = async (event: MessageEvent) => {
   const { type } = event.data
@@ -7,15 +8,29 @@ self.onmessage = async (event: MessageEvent) => {
   try {
     switch (type) {
       case 'INIT': {
-        const streamsBuffer = await fetch('/data/streams.msgpack').then(res => res.arrayBuffer())
+        const response = await fetch(asset('/data/streams.msgpack'))
 
-        const streams = unpack<Stream.Type>(streamsBuffer)
+        if (!response.ok) {
+          throw new Error(`Unable to load streams data: HTTP ${response.status}`)
+        }
 
-        self.postMessage({ type: 'READY', payload: { streams } })
+        const streamsBuffer = await response.arrayBuffer()
+        const streams = unpack<Stream.Type[]>(streamsBuffer)
+
+        self.postMessage({
+          type: 'READY',
+          payload: { streams }
+        })
+
         break
       }
     }
   } catch (error) {
-    self.postMessage({ type: 'ERROR', payload: { message: error.message } })
+    const message = error instanceof Error ? error.message : String(error)
+
+    self.postMessage({
+      type: 'ERROR',
+      payload: { message }
+    })
   }
 }
