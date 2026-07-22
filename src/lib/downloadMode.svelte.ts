@@ -5,6 +5,7 @@ import { search } from './search.svelte'
 import { orderBy } from 'natural-orderby'
 import DownloadModeWorker from '$lib/workers/downloadMode.worker?worker'
 import { toast } from '@zerodevx/svelte-toast'
+import { asset } from '$app/paths'
 
 class DownloadModeState {
   isEnabled = $state(false)
@@ -14,7 +15,12 @@ class DownloadModeState {
 
   init() {
     this.downloadModeWorker = new DownloadModeWorker()
-    this.downloadModeWorker.postMessage({ type: 'INIT' })
+    this.downloadModeWorker.postMessage({
+      type: 'INIT',
+      payload: {
+        dataUrl: asset('/data/streams.msgpack')
+      }
+    })
     this.downloadModeWorker.onmessage = (event: MessageEvent) => {
       const { type, payload } = event.data
 
