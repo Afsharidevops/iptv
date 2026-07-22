@@ -30,8 +30,21 @@
   onMount(async () => {
     try {
       const [countriesBuffer, channelStubsBuffer] = await Promise.all([
-        fetch(asset('/data/countries.msgpack')).then(res => res.arrayBuffer()),
-        fetch(asset('/data/channelStubs.msgpack')).then(res => res.arrayBuffer())
+        fetch(asset('/data/countries.msgpack')).then(res => {
+          if (!res.ok) {
+            throw new Error(`Unable to load countries: HTTP ${res.status}`)
+          }
+      
+          return res.arrayBuffer()
+        }),
+      
+        fetch(asset('/data/channelStubs.msgpack')).then(res => {
+          if (!res.ok) {
+            throw new Error(`Unable to load channels: HTTP ${res.status}`)
+          }
+      
+          return res.arrayBuffer()
+        })
       ])
 
       countries = unpack(countriesBuffer)
