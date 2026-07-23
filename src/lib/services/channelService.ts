@@ -111,7 +111,7 @@ export class ChannelService {
   static getPageUrl(channelId: string): string {
     const path = ChannelService.getPagePath(channelId)
 
-    return new URL(path, SITE_ORIGIN).toString()
+    return new URL(path.replace(/^\//, ''), SITE_ORIGIN).toString()
   }
 
   static isClosed(data: { closed: string | null; replacedBy: string | null }): boolean {

@@ -40,6 +40,10 @@ class DownloadModeState {
 
   toggle() {
     this.isEnabled = !this.isEnabled
+
+    if (this.isEnabled && !this.downloadModeWorker) {
+      this.init()
+    }
   }
 
   getStreams() {

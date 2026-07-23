@@ -119,7 +119,7 @@ export class FeedService {
   static getPageUrl(data: { channelId: string; feedId: string }): string {
     const path = FeedService.getPagePath(data)
 
-    return new URL(path, SITE_ORIGIN).toString()
+    return new URL(path.replace(/^\//, ''), SITE_ORIGIN).toString()
   }
 
   static getEnrichedFeed(

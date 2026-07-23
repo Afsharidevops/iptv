@@ -1,5 +1,5 @@
 {
-  "name": "iptv-org.github.io",
+  "name": "afsharidevops-iptv",
   "type": "module",
   "private": true,
   "scripts": {
@@ -11,7 +11,7 @@
     "preview": "npm run build && vite preview --host",
     "prepare": "svelte-kit sync",
     "postinstall": "npm run api:load",
-    "postbuild": "npx svelte-sitemap -d https://iptv-org.github.io -o docs",
+    "postbuild": "npx svelte-sitemap -d https://afsharidevops.github.io/iptv -o docs",
     "test": "vitest run",
     "lint": "eslint"
   },

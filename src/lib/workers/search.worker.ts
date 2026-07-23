@@ -1,7 +1,6 @@
 import type { Channel } from '$lib/types'
 import sjs from '@freearhey/search-js'
 import { unpack } from '$lib/utils'
-import { base } from '$app/paths'
 
 const searchResults = new Set<string>()
 const searchResultsInit = new Set<string>()
@@ -14,24 +13,26 @@ self.onmessage = async (event: MessageEvent) => {
   try {
     switch (type) {
       case 'INIT': {
-        const response = await fetch(`${base}/data/searchable.msgpack`)
-      
-        if (!response.ok) {
-          throw new Error(
-            `Unable to load searchable.msgpack: HTTP ${response.status}`
-          )
+        if (!payload?.dataUrl) {
+          throw new Error('Search data URL is missing')
         }
-      
+
+        const response = await fetch(payload.dataUrl)
+
+        if (!response.ok) {
+          throw new Error(`Unable to load searchable.msgpack: HTTP ${response.status}`)
+        }
+
         const searchableBuffer = await response.arrayBuffer()
         const searchable = unpack<Channel.Searchable>(searchableBuffer)
-      
+
         searchIndex = sjs.createIndex(searchable)
-      
+
         searchable.forEach(channel => {
           searchResults.add(channel.id)
           searchResultsInit.add(channel.id)
         })
-      
+
         self.postMessage({ type: 'READY' })
         break
       }
@@ -39,9 +40,7 @@ self.onmessage = async (event: MessageEvent) => {
       case 'SEARCH': {
         if (payload.query) {
           if (searchIndex) {
-            const results: Channel.Searchable[] = searchIndex.search(
-              payload.query
-            )
+            const results: Channel.Searchable[] = searchIndex.search(payload.query)
 
             searchResults.clear()
 
@@ -87,8 +86,7 @@ self.onmessage = async (event: MessageEvent) => {
       }
     }
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : String(error)
+    const message = error instanceof Error ? error.message : String(error)
 
     self.postMessage({
       type: 'ERROR',

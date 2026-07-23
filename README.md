@@ -1,4 +1,4 @@
-# iptv-org.github.io [![update](https://github.com/iptv-org/iptv-org.github.io/actions/workflows/update.yml/badge.svg)](https://github.com/iptv-org/iptv-org.github.io/actions/workflows/update.yml)
+# Afsharidevops IPTV [![update](https://github.com/Afsharidevops/iptv/actions/workflows/update.yml/badge.svg)](https://github.com/Afsharidevops/iptv/actions/workflows/update.yml)
 
 ## Developing
 
@@ -45,7 +45,7 @@ If you have a question or an idea, you can post it in the [Discussions](https://
 
 ## Contribution
 
-If you find a bug or want to contribute to the code or documentation, you can help by submitting an [issue](https://github.com/iptv-org/iptv-org.github.io/issues) or a [pull request](https://github.com/iptv-org/iptv-org.github.io/pulls).
+If you find a bug or want to contribute to the code or documentation, you can help by submitting an [issue](https://github.com/Afsharidevops/iptv/issues) or a [pull request](https://github.com/Afsharidevops/iptv/pulls).
 
 And thank you to everyone who has already contributed!
 

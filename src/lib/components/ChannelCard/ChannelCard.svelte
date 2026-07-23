@@ -4,6 +4,7 @@
   import { toast } from '@zerodevx/svelte-toast'
   import { getContext } from 'svelte'
   import { unpack } from '$lib/utils'
+  import { withBase } from '$lib/withBase'
   import * as ChannelCard from './'
   import {
     BlockedBadge,
@@ -31,7 +32,7 @@
 
   async function showLogos() {
     try {
-      const logosBuffer = await fetch(channel.logosPath).then(res => res.arrayBuffer())
+      const logosBuffer = await fetch(withBase(channel.logosPath)).then(res => res.arrayBuffer())
 
       const logos = unpack<Logo.Type>(logosBuffer)
 

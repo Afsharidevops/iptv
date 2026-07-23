@@ -34,15 +34,15 @@
           if (!res.ok) {
             throw new Error(`Unable to load countries: HTTP ${res.status}`)
           }
-      
+
           return res.arrayBuffer()
         }),
-      
+
         fetch(asset('/data/channelStubs.msgpack')).then(res => {
           if (!res.ok) {
             throw new Error(`Unable to load channels: HTTP ${res.status}`)
           }
-      
+
           return res.arrayBuffer()
         })
       ])
@@ -51,7 +51,6 @@
       channels = unpack(channelStubsBuffer)
 
       search.init()
-      downloadMode.init()
     } catch (error) {
       toast.push(error.message)
     }
@@ -166,7 +165,7 @@
     <title>iptv-org</title>
   {/if}
   <meta name="description" content="iptv-org is user editable database for TV channels" />
-  <link rel="canonical" href="https://iptv-org.github.io/" />
+  <link rel="canonical" href="https://afsharidevops.github.io/iptv/" />
 </svelte:head>
 
 <header

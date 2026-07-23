@@ -33,7 +33,7 @@
   }
 
   function openGitHub() {
-    window.open('https://github.com/iptv-org/', '_blank', 'noreferrer')
+    window.open('https://github.com/Afsharidevops/iptv', '_blank', 'noreferrer')
   }
 
   onMount(() => {

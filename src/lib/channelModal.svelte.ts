@@ -1,6 +1,7 @@
 import { toast } from '@zerodevx/svelte-toast'
 import { unpackObject } from '$lib/utils'
 import type { Channel } from '$lib/types'
+import { withBase } from '$lib/withBase'
 
 class ChannelModalManager {
   originUrl = $state<URL | null>(null)
@@ -8,7 +9,7 @@ class ChannelModalManager {
   #abortController: AbortController | null = null
 
   setOriginUrl(url: URL) {
-    if (url.pathname === '/') this.originUrl = url
+    if (url.pathname === withBase('/')) this.originUrl = url
   }
 
   async updateChannel(channelId: string) {
@@ -25,7 +26,7 @@ class ChannelModalManager {
 
     try {
       const channelBuffer = await fetch(
-        `/data/channels/${countryCode}/${channelSlug}/_data.msgpack`,
+        withBase(`/data/channels/${countryCode}/${channelSlug}/_data.msgpack`),
         { signal: this.#abortController.signal }
       ).then(res => res.arrayBuffer())
 

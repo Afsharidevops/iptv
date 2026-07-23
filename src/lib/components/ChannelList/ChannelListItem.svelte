@@ -3,6 +3,7 @@
   import { channelModal } from '$lib/channelModal.svelte'
   import type { ModalContext } from '$lib/modal.svelte'
   import { pluralize, unpack } from '$lib/utils'
+  import { withBase } from '$lib/withBase'
   import { toast } from '@zerodevx/svelte-toast'
   import { pushState } from '$app/navigation'
   import { resolve } from '$app/paths'
@@ -52,7 +53,7 @@
     event.stopPropagation()
 
     try {
-      const feedsBuffer = await fetch(channel.feedsPath).then(res => res.arrayBuffer())
+      const feedsBuffer = await fetch(withBase(channel.feedsPath)).then(res => res.arrayBuffer())
       const feeds = unpack<Feed.Type>(feedsBuffer)
 
       modal.open(FeedsCard, {
@@ -71,7 +72,7 @@
     event.stopPropagation()
 
     try {
-      const logosBuffer = await fetch(channel.logosPath).then(res => res.arrayBuffer())
+      const logosBuffer = await fetch(withBase(channel.logosPath)).then(res => res.arrayBuffer())
       const logos = unpack<Logo.Type>(logosBuffer)
 
       modal.open(LogosCard, {
