@@ -1,6 +1,7 @@
 import type { Channel } from '$lib/types'
 import sjs from '@freearhey/search-js'
 import { unpack } from '$lib/utils'
+import { base } from '$app/paths'
 
 const searchResults = new Set<string>()
 const searchResultsInit = new Set<string>()
@@ -13,33 +14,24 @@ self.onmessage = async (event: MessageEvent) => {
   try {
     switch (type) {
       case 'INIT': {
-        const dataUrl = payload?.dataUrl
-
-        if (!dataUrl) {
-          throw new Error('Search data URL was not provided')
-        }
-
-        const response = await fetch(dataUrl)
-
+        const response = await fetch(`${base}/data/searchable.msgpack`)
+      
         if (!response.ok) {
           throw new Error(
-            `Unable to load search data: HTTP ${response.status}`
+            `Unable to load searchable.msgpack: HTTP ${response.status}`
           )
         }
-
+      
         const searchableBuffer = await response.arrayBuffer()
         const searchable = unpack<Channel.Searchable>(searchableBuffer)
-
+      
         searchIndex = sjs.createIndex(searchable)
-
-        searchResults.clear()
-        searchResultsInit.clear()
-
+      
         searchable.forEach(channel => {
           searchResults.add(channel.id)
           searchResultsInit.add(channel.id)
         })
-
+      
         self.postMessage({ type: 'READY' })
         break
       }
