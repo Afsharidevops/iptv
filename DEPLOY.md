@@ -10,6 +10,18 @@ This fork is configured for the project-page URL:
 2. In **GitHub → Settings → Pages**, set **Source** to **GitHub Actions**.
 3. Push to `main`, then open **Actions → update** and confirm that both `build` and `deploy` finish successfully.
 
+## Country exclusions
+
+The generated site data is filtered in `src/commands/data/compile.ts` before it is compiled.
+`EXCLUDED_COUNTRY_CODES` currently contains `IL`, so Israel and its related channels,
+feeds, streams, guides, logos, locations and search records are not published.
+
+To exclude another country later, add its two-letter code to the same set, for example:
+
+```ts
+const EXCLUDED_COUNTRY_CODES = new Set(['IL', 'XX'])
+```
+
 ## Clear the old broken service worker once
 
 After the first successful deployment, the browser may still be controlled by the previous service worker.

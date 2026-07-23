@@ -21,6 +21,10 @@ import {
   TimezoneService
 } from '$lib/services'
 
+// ISO 3166-1 alpha-2 country codes that should not be published.
+// Add more codes here if you need to exclude additional countries.
+const EXCLUDED_COUNTRY_CODES = new Set(['IL'])
+
 export default async function main() {
   console.log('loading api data...')
   const rawData = await load()
@@ -34,7 +38,81 @@ export async function load(): Promise<sdk.Types.RawData> {
   return await api.loadDataFromDisk()
 }
 
+export function excludeCountries(
+  data: sdk.Types.RawData,
+  excludedCountryCodes = EXCLUDED_COUNTRY_CODES
+): sdk.Types.RawData {
+  const excludedChannelIds = new Set(
+    data.channels
+      .filter(channel => excludedCountryCodes.has(channel.country))
+      .map(channel => channel.id)
+  )
+
+  const isExcludedChannel = (channelId: string | null | undefined): boolean => {
+    if (!channelId) return false
+
+    // Some references can include a feed suffix such as "Channel.il@HD".
+    return excludedChannelIds.has(channelId.split('@')[0])
+  }
+
+  const excludedLocationCodes = new Set(
+    Array.from(excludedCountryCodes, countryCode => `c/${countryCode}`)
+  )
+
+  data.cities.forEach(city => {
+    if (excludedCountryCodes.has(city.country)) {
+      excludedLocationCodes.add(`ct/${city.code}`)
+    }
+  })
+
+  data.subdivisions.forEach(subdivision => {
+    if (excludedCountryCodes.has(subdivision.country)) {
+      excludedLocationCodes.add(`s/${subdivision.code}`)
+    }
+  })
+
+  const regions = data.regions.flatMap(region => {
+    const countries = region.countries.filter(code => !excludedCountryCodes.has(code))
+
+    if (!countries.length) {
+      excludedLocationCodes.add(`r/${region.code}`)
+      return []
+    }
+
+    return [{ ...region, countries }]
+  })
+
+  return {
+    ...data,
+    blocklist: data.blocklist.filter(record => !isExcludedChannel(record.channel)),
+    channels: data.channels
+      .filter(channel => !isExcludedChannel(channel.id))
+      .map(channel => {
+        if (!isExcludedChannel(channel.replaced_by)) return channel
+
+        return { ...channel, replaced_by: null }
+      }),
+    cities: data.cities.filter(city => !excludedCountryCodes.has(city.country)),
+    countries: data.countries.filter(country => !excludedCountryCodes.has(country.code)),
+    feeds: data.feeds
+      .filter(feed => !isExcludedChannel(feed.channel))
+      .map(feed => ({
+        ...feed,
+        broadcast_area: feed.broadcast_area.filter(code => !excludedLocationCodes.has(code))
+      })),
+    guides: data.guides.filter(guide => !isExcludedChannel(guide.channel)),
+    logos: data.logos.filter(logo => !isExcludedChannel(logo.channel)),
+    regions,
+    streams: data.streams.filter(stream => !isExcludedChannel(stream.channel)),
+    subdivisions: data.subdivisions.filter(
+      subdivision => !excludedCountryCodes.has(subdivision.country)
+    )
+  }
+}
+
 export function compile(data: sdk.Types.RawData): Compile.Data {
+  data = excludeCountries(data)
+
   const locations = []
   data.cities.forEach(city => {
     locations.push({ code: `ct/${city.code}`, name: city.name })
